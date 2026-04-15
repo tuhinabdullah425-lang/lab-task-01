@@ -6,8 +6,14 @@ import {
   Patch,
   Delete,
   Param,
+  Body,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CourseService } from './course.service';
+import { CreateCourseDto } from './dto/create-course.dto';
+import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Controller('course')
 export class CourseController {
@@ -25,22 +31,42 @@ export class CourseController {
   }
 
   @Post()
-  createCourse() {
-    return this.courseService.createCourse();
+  createCourse(@Body() dto: CreateCourseDto) {
+    return this.courseService.createCourse(dto);
   }
 
   @Put(':id')
-  updateCourse(@Param('id') id: string) {
-    return this.courseService.updateCourse(id);
+  updateCourse(
+    @Param('id') id: string,
+    @Body() dto: UpdateCourseDto,
+  ) {
+    return this.courseService.updateCourse(id, dto);
   }
 
   @Patch(':id')
-  patchCourse(@Param('id') id: string) {
-    return this.courseService.patchCourse(id);
+  patchCourse(
+    @Param('id') id: string,
+    @Body() dto: UpdateCourseDto,
+  ) {
+    return this.courseService.patchCourse(id, dto);
   }
 
   @Delete(':id')
   deleteCourse(@Param('id') id: string) {
     return this.courseService.deleteCourse(id);
+  }
+
+  // ✅ File Upload Route
+  @Post(':id/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadCourseMaterial(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return {
+      message: 'Material uploaded successfully',
+      courseId: id,
+      filename: file?.originalname,
+    };
   }
 }
